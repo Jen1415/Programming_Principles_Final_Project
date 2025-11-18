@@ -3,6 +3,11 @@ def add_student():
     info = []
     while True:
         userInput = input("Enter Student ID: ")
+        # Prevent the user from duplicate the student ID
+        students=load_students()
+        if userInput in students:
+            print("Error: This student ID has been recorded.")
+            continue
         if len(userInput) == 8 and userInput.isdigit():
             info.append(userInput)
             break
@@ -33,6 +38,11 @@ def add_course():
     info = []
     while True:
         userInput = input("Enter Course ID: ")
+        courses=load_courses()
+        # To prevent the user from duplicate the course id
+        if userInput in courses:
+            print("Error: This course ID has been recorded.")
+            continue
         if len(userInput) == 7 and userInput[0:2].isalpha() and userInput[3:6].isdigit():
             info.append(userInput.upper())
             break
@@ -40,6 +50,9 @@ def add_course():
             print("Error: Invalid format")
     while True:
         userInput = input("Enter Course Name: ")
+        if userInput in courses.values():
+            print("Error: The course name has been recorded.")
+            continue
         if any(i.isdigit() for i in userInput):
             print("Error: No numbers allowed")
             continue
@@ -78,6 +91,18 @@ def load_courses():
                 courses[course_id] =course_name
     return courses
 
+# function to return only student id and course name in dict form
+def check_courses():
+    records = {}
+    with open("grades.txt","r") as c:
+        for line in c:
+            parts=line.strip().split(",")
+            if len(parts) >= 2:
+                student_id = parts[0]
+                course_name = parts[1]
+                records[student_id]=course_name
+    return records
+
 
 #function to record the results
 def record():
@@ -109,6 +134,11 @@ def record():
         print(f"{course_id} - {course_name}")
     while True:
         userInput = input("Enter Course ID: ")
+        # if the user input program is the same as the program has been recorded, an error will occur
+        records=check_courses()
+        if courses[userInput] == records[info[0]]:
+            print("Error: The course's grade has been recorded.\n")
+            continue
         if userInput in courses:
             print(f"Courses found: {courses[userInput]}")
             info.append(courses[userInput])
@@ -153,6 +183,7 @@ def record():
         a.write('\n')
     print("\nAction successful!\n--------------------")
 
+
 def load_grades():
     student_grades = {}
     grades = {}
@@ -174,8 +205,8 @@ def display_individual():
         print("Error: No grades record found. Add a record first.")
         return 
     students=load_students()
+    print("Student available:")
     for student_id, name in students.items():
-        print("Student available:")
         print(f"{student_id} - {name}")
     while True:
         userInput = input("Enter Student ID: ")
@@ -191,7 +222,7 @@ def display_individual():
             print(f'{program_name}: {grade}')
     else:
         print("No records")
-    print()
+    print("\nAction successful!\n--------------------")
 
 
 #function to show the options
@@ -233,18 +264,19 @@ def main():
             case '3':
                 record()
             case '4':
-                print("4")
+                display_individual()
             case '5':
                 print("5")
             case '6':
                 print("6")
             case '0':
                 print("Exiting program...")
+                print("--------------------")
                 break
             case _ :
                 print("Invalid option!")
 
 
 if __name__ == "__main__":
-
     main()
+
