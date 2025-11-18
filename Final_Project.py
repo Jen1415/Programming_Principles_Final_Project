@@ -153,6 +153,46 @@ def record():
         a.write('\n')
     print("\nAction successful!\n--------------------")
 
+def load_grades():
+    student_grades = {}
+    grades = {}
+    with open("grades.txt","r") as g:
+        for line in g:
+            parts = line.strip().split(",")
+            if len(parts) >= 4:
+                student_id = parts[0]
+                program_name = parts[1]
+                grade = parts[3]
+                grades[program_name]=grade
+                student_grades[student_id]=grades
+    return student_grades
+
+
+def display_individual():
+    student_grades=load_grades()
+    if not student_grades:
+        print("Error: No grades record found. Add a record first.")
+        return 
+    students=load_students()
+    for student_id, name in students.items():
+        print("Student available:")
+        print(f"{student_id} - {name}")
+    while True:
+        userInput = input("Enter Student ID: ")
+        if userInput in students:
+            print(f"Student found: {students[userInput]}")
+            break
+        else:
+            print("Error: Student not found")
+            continue
+    print(f'{userInput} - {students[userInput]}:')
+    if userInput in student_grades:
+        for program_name, grade in student_grades[userInput].items():
+            print(f'{program_name}: {grade}')
+    else:
+        print("No records")
+    print()
+
 
 #function to show the options
 def print_option():
@@ -206,4 +246,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
