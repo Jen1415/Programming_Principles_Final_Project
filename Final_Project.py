@@ -18,7 +18,7 @@ def add_student():
         if any(i.isdigit() for i in userInput):
             print("Error: No numbers allowed")
             continue
-        info.append(userInput)
+        info.append(userInput.upper())
         break
     while True:
         userInput = input("Enter Student Email: ")
@@ -30,7 +30,7 @@ def add_student():
     studentLine = ",".join(info)
     with open("students.txt", "a") as a:
         a.write(studentLine)
-        a.write('\n')
+        a.write("\n")
     print("\nAction successful!\n--------------------")
 
 #function to add a new course
@@ -56,12 +56,12 @@ def add_course():
         if any(i.isdigit() for i in userInput):
             print("Error: No numbers allowed")
             continue
-        info.append(userInput)
+        info.append(userInput.upper())
         break
     courseLine = ",".join(info)
     with open("courses.txt", "a") as a:
         a.write(courseLine)
-        a.write('\n')
+        a.write("\n")
     print("\nAction successful!\n--------------------")
 
 # funciton to return recorded students in dict form
@@ -92,15 +92,21 @@ def load_courses():
     return courses
 
 # function to return only student id and course name in dict form
-def check_courses():
+def check_grades():
     records = {}
-    with open("grades.txt","r") as c:
-        for line in c:
-            parts=line.strip().split(",")
+    with open("grades.txt", "r") as g:
+        for line in g:
+            parts = line.strip().split(",")
             if len(parts) >= 2:
                 student_id = parts[0]
                 course_name = parts[1]
-                records[student_id]=course_name
+
+                # initialize list if first time
+                if student_id not in records:
+                    records[student_id] = []
+
+                # add course
+                records[student_id].append(course_name)
     return records
 
 
@@ -112,9 +118,10 @@ def record():
         # if there is no recorded student, stop function early
         print("Error: No student found. Please add a student first.")
         return
-    print("Available students:")
+    print("--------------------\nAvailable students:")
     for student_id, name in students.items():
         print(f"{student_id} - {name}")
+    print('--------------------')
     while True:
         userInput = input("Enter Student ID: ")
         if userInput in students:
@@ -129,16 +136,30 @@ def record():
         # if there is no recorded course, stop function early
         print("Error: No course found. Please add a course first.")
         return
-    print("Available courses:")
+    records = check_grades()
+    student_id = info[0]
+    print('--------------------\nUngraded course(s):')
     for course_id, course_name in courses.items():
-        print(f"{course_id} - {course_name}")
+        # The line to prevent error if no student id be recorded yet
+        if student_id in records:
+            # make all the course name as a list and sort it in ascending order
+            course_list=list(courses.values())
+            course_list.sort()
+            # make all the graded course as a list and sort it in ascending order
+            graded_list = list(records[student_id])
+            graded_list.sort()
+            if course_list != graded_list:
+                if course_name not in graded_list:
+                    print(f'{course_id}: {course_name}')
+            else:
+                print("Every course the student takes has been graded.\n--------------------")
+                return
+        else:
+            print(f'{course_id}: {course_name}')
+    print('--------------------')
     while True:
         userInput = input("Enter Course ID: ")
         # if the user input program is the same as the program has been recorded, an error will occur
-        records=check_courses()
-        if courses[userInput] == records[info[0]]:
-            print("Error: The course's grade has been recorded.\n")
-            continue
         if userInput in courses:
             print(f"Courses found: {courses[userInput]}")
             info.append(courses[userInput])
@@ -173,6 +194,7 @@ def record():
                 grade='D'
             else:
                 grade='F'
+            print(f"Grade: {grade}")
             info.append(grade)
             break
         except:
@@ -180,22 +202,25 @@ def record():
     gradeLine = ",".join(info)
     with open("grades.txt", "a") as a:
         a.write(gradeLine)
-        a.write('\n')
+        a.write("\n")
     print("\nAction successful!\n--------------------")
 
 
 def load_grades():
     student_grades = {}
-    grades = {}
     with open("grades.txt","r") as g:
         for line in g:
             parts = line.strip().split(",")
             if len(parts) >= 4:
                 student_id = parts[0]
-                program_name = parts[1]
+                course_name = parts[1]
                 grade = parts[3]
-                grades[program_name]=grade
-                student_grades[student_id]=grades
+                if student_id not in student_grades:
+                    student_grades[student_id] = {}
+
+                # add course: grade
+                student_grades[student_id][course_name] = grade
+
     return student_grades
 
 
@@ -279,4 +304,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
